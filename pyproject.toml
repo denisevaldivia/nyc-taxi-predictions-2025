@@ -6,10 +6,13 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastparquet>=2024.11.0",
+    "jupyter>=1.1.1",
     "jupyterlab>=4.4.9",
     "matplotlib>=3.10.6",
-    "mlflow>=3.4.0",
+    "mlflow>=3.5.0",
+    "optuna>=4.5.0",
     "pandas>=2.3.3",
     "pyarrow>=21.0.0",
     "scikit-learn>=1.7.2",
+    "xgboost>=3.1.1",
 ]
