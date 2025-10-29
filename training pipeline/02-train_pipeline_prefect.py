@@ -13,6 +13,7 @@ from mlflow.models.signature import infer_signature
 from sklearn.metrics import root_mean_squared_error
 from sklearn.feature_extraction import DictVectorizer
 from prefect import flow, task
+from mlflow import MlflowClient
 
 @task(name="Read Data")
 def read_data(file_path: str) -> pd.DataFrame:
@@ -213,6 +214,41 @@ def train_best_model(X_train, X_val, y_train, y_val, dv, best_params) -> None:
         )
     return None
 
+@task(name="Register model")
+def model_registry(EXPERIMENT_NAME):
+    
+    runs = mlflow.search_runs(
+    experiment_names=EXPERIMENT_NAME,
+    order_by=["metrics.rmse ASC"],
+    output_format="list"
+    )
+
+    # Obtener el mejor run
+    if len(runs) > 0:
+        best_run = runs[0]
+        champ_id = best_run.info.run_id
+        print(f"Run ID: {best_run.info.run_id}")
+    else:
+        print("⚠️ No hay runs con métrica RMSE.")
+
+
+    model_name = "workspace.default.nyc-taxi-experiments-prefect"
+    result = mlflow.register_model(
+    model_uri=f"runs:/{best_run.info.run_id}/model",
+    name=model_name
+    )
+
+    client = MlflowClient()
+
+    model_version = result.version
+    new_alias = "Champion"
+
+    client.set_registered_model_alias(
+        name=model_name,
+        alias=new_alias,
+        version=model_version
+    )
+
 @flow(name="Main Flow")
 def main_flow(year: int, month_train: str, month_val: str) -> None:
     """The main training pipeline"""
@@ -221,7 +257,7 @@ def main_flow(year: int, month_train: str, month_val: str) -> None:
     val_path = f"../data/green_tripdata_{year}-{month_val}.parquet"
     
     load_dotenv(override=True)  # Carga las variables del archivo .env
-    EXPERIMENT_NAME = "/Users/pipochatgpt@gmail.com/nyc-taxi-experiments"
+    EXPERIMENT_NAME = "/Users/pipochatgpt@gmail.com/nyc-taxi-experiments-prefect"
 
     mlflow.set_tracking_uri("databricks")
     experiment = mlflow.set_experiment(experiment_name=EXPERIMENT_NAME)
@@ -238,6 +274,9 @@ def main_flow(year: int, month_train: str, month_val: str) -> None:
     
     # Train
     train_best_model(X_train, X_val, y_train, y_val, dv, best_params)
+
+    # Register Model
+    model_registry(EXPERIMENT_NAME)
 
 if __name__ == "__main__":
     main_flow(year=2025, month_train="01", month_val="02")
