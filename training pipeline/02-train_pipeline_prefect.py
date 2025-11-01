@@ -218,7 +218,7 @@ def train_best_model(X_train, X_val, y_train, y_val, dv, best_params) -> None:
 def model_registry(EXPERIMENT_NAME):
     
     runs = mlflow.search_runs(
-    experiment_names=EXPERIMENT_NAME,
+    experiment_names=[EXPERIMENT_NAME],
     order_by=["metrics.rmse ASC"],
     output_format="list"
     )

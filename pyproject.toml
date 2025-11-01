@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi[standard]>=0.119.1",
     "fastparquet>=2024.11.0",
     "jupyter>=1.1.1",
     "jupyterlab>=4.4.9",
@@ -15,5 +16,6 @@ dependencies = [
     "prefect>=3.4.25",
     "pyarrow>=21.0.0",
     "scikit-learn>=1.7.2",
+    "streamlit>=1.51.0",
     "xgboost>=3.1.1",
 ]
